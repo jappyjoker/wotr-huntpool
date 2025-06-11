@@ -124,7 +124,7 @@
 
   <div id="output">Tile: 🎲</div>
 
-  <button class="button reinsert-btn" onclick="reinsertSelected()" id="reinsertButton" disabled>Insert Selected Tile/s</button>
+  <button class="button reinsert-btn" onclick="reinsertSelected()" id="reinsertButton" disabled>Add Selected Tile/s</button>
   <button class="button remove-btn" onclick="removeSelected()" id="removeButton" disabled>Remove Selected Tile/s</button>
 
   <div id="container">
@@ -162,7 +162,7 @@
       "0", "0", "-1", "-2", "Eye Stop", "1r Stop", "3 Stop", "Shelob Stop"
     ];
     const expansionTilesOriginal = [
-      "Sméagol", "Sméagol", "Sméagol", "Sméagol", "1/Crown", "2/Crown"
+      "Sméagol (LoMe)", "Sméagol (LOME)", "Sméagol (LOME)", "Sméagol (LOME)", "1/Crown (KOME)", "2/Crown (KOME)"
     ];
 
     let tiles = [...originalTiles];
@@ -180,7 +180,7 @@
       updateDisplay();
       if (tiles.length === 0) {
         document.getElementById("drawButton").disabled = true;
-        document.getElementById("output").textContent += " (Last tile!)";
+        document.getElementById("output").textContent += " (Last tile! Reset the Hunt Pool.)";
       }
     }
 
@@ -256,7 +256,7 @@
       if (tiles.length > 0) document.getElementById("drawButton").disabled = false;
 
       const total = selected.drawn.length + selected.special.length + selected.removed.length + selected.expansion.length;
-      document.getElementById("output").textContent = `${total} tile(s) inserted into the Hunt Pool.`;
+      document.getElementById("output").textContent = `${total} tile(s) added to the Hunt Pool.`;
       updateDisplay();
     }
 
@@ -278,7 +278,7 @@
       toRemove.expansion.sort((a, b) => b - a).forEach(i => removedTiles.push(expansionTiles.splice(i, 1)[0]));
 
       const total = toRemove.drawn.length + toRemove.bag.length + toRemove.special.length + toRemove.expansion.length;
-      document.getElementById("output").textContent = `${total} tile(s) removed permanently from the Hunt Pool.`;
+      document.getElementById("output").textContent = `${total} tile(s) permanently removed from the game.`;
       updateDisplay();
     }
 
