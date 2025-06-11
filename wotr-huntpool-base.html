@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>War of the Ring - Hunt Pool</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+
+    .button {
+      padding: 1em 1.5em;
+      margin: 0.3em;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+    }
+    .draw-btn { background-color: #e53935; }
+    .reset-btn { background-color: #ef5350; }
+    .reinsert-btn { background-color: #f44336; }
+    .remove-btn { background-color: #b71c1c; }
+
+    .button:disabled {
+      background-color: #aaa !important;
+      cursor: not-allowed;
+    }
+
+    #output {
+      font-size: 2em;
+      margin-top: 1em;
+      color: #222;
+      min-height: 2.5em;
+    }
+
+    #container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2em;
+      margin-top: 2em;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 1em 1.5em;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 280px;
+      text-align: left;
+      min-height: 150px;
+      overflow-y: auto;
+    }
+
+    .box h2 {
+      margin-top: 0;
+      margin-bottom: 0.5em;
+      font-size: 1.4em;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.3em;
+    }
+
+    .tile-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      margin: 0.15em 0;
+    }
+
+    .blue-bold {
+      color: blue;
+      font-weight: bold;
+    }
+
+    .red-bold {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h1>War of the Ring - Hunt Pool</h1>
+
+<button class="button draw-btn" onclick="drawTile()" id="drawButton">Draw</button>
+<button class="button reset-btn" onclick="resetTiles()">Reset</button>
+<button class="button reinsert-btn" onclick="reinsertSelected()" id="reinsertButton" disabled>Reinsert selected tiles</button>
+<button class="button remove-btn" onclick="removeSelected()" id="removeButton" disabled>Remove selected tiles permanently</button>
+
+<div id="output">🎲</div>
+
+<div id="container">
+  <div class="box">
+    <h2>Drawn Tiles</h2>
+    <div id="history">None</div>
+  </div>
+  <div class="box">
+    <h2>Tiles in Bag</h2>
+    <div id="remaining">None</div>
+  </div>
+  <div class="box">
+    <h2>Available Special Tiles</h2>
+    <div id="specialTilesList">None</div>
+  </div>
+  <div class="box">
+    <h2>Permanently Removed Tiles</h2>
+    <div id="removedTilesList">None</div>
+  </div>
+</div>
+
+<script>
+  const originalTiles = [
+    "3", "3", "3", "2", "2", "1", "1",
+    "Eye", "Eye", "Eye", "Eye",
+    "2r", "1r", "1r", "0r", "0r"
+  ];
+  const specialTilesOriginal = [
+    "0", "0", "-1", "-2", "Eye Stop", "1r Stop", "3 Stop", "Shelob Stop"
+  ];
+
+  let tiles = [...originalTiles];
+  let drawnTiles = [];
+  let specialTiles = [...specialTilesOriginal];
+  let removedTiles = [];
+
+  function drawTile() {
+    if (tiles.length === 0) return;
+    const index = Math.floor(Math.random() * tiles.length);
+    const tile = tiles.splice(index, 1)[0];
+    drawnTiles.push(tile);
+    document.getElementById("output").textContent = `You drew: ${tile}`;
+    updateDisplay();
+    if (tiles.length === 0) {
+      document.getElementById("drawButton").disabled = true;
+      document.getElementById("output").textContent += " (Last tile!)";
+    }
+  }
+
+  function resetTiles() {
+    tiles = [...originalTiles];
+    drawnTiles = [];
+    specialTiles = [...specialTilesOriginal];
+    removedTiles = [];
+    document.getElementById("drawButton").disabled = false;
+    document.getElementById("output").textContent = "🎲";
+    updateDisplay();
+  }
+
+  function updateDisplay() {
+    const makeList = (arr, listName) => {
+      if (arr.length === 0) return "None";
+      return arr.map((tile, i) => {
+        let tileLabel = tile;
+        if (["special", "removed"].includes(listName)) {
+          if (["0", "-1", "-2"].includes(tile)) {
+            tileLabel = `<span class="blue-bold">${tile}</span>`;
+          } else if (["Eye Stop", "1r Stop", "3 Stop", "Shelob Stop"].includes(tile)) {
+            tileLabel = `<span class="red-bold">${tile}</span>`;
+          }
+        }
+        return `
+          <div class="tile-item">
+            <input type="checkbox" class="removable" data-list="${listName}" data-index="${i}" id="${listName}_${i}" />
+            <label for="${listName}_${i}">${tileLabel}</label>
+          </div>`;
+      }).join("");
+    };
+
+    document.getElementById("history").innerHTML = makeList(drawnTiles, "drawn");
+    document.getElementById("remaining").innerHTML = makeList(tiles, "bag");
+    document.getElementById("specialTilesList").innerHTML = makeList(specialTiles, "special");
+    document.getElementById("removedTilesList").innerHTML = makeList(removedTiles, "removed");
+
+    updateButtonsState();
+  }
+
+  function updateButtonsState() {
+    const allCheckboxes = document.querySelectorAll("input.removable");
+    const anyChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+    document.getElementById("removeButton").disabled = !anyChecked;
+
+    const drawnChecked = Array.from(document.querySelectorAll("#history input[type='checkbox']")).some(cb => cb.checked);
+    const specialChecked = Array.from(document.querySelectorAll("#specialTilesList input[type='checkbox']")).some(cb => cb.checked);
+    const removedChecked = Array.from(document.querySelectorAll("#removedTilesList input[type='checkbox']")).some(cb => cb.checked);
+    document.getElementById("reinsertButton").disabled = !(drawnChecked || specialChecked || removedChecked);
+  }
+
+  function reinsertSelected() {
+    const checkboxes = document.querySelectorAll("input.removable");
+    const selected = { drawn: [], special: [], removed: [] };
+
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        const listName = cb.dataset.list;
+        const index = parseInt(cb.dataset.index);
+        selected[listName].push(index);
+      }
+    });
+
+    selected.drawn.sort((a,b) => b - a).forEach(i => {
+      const tile = drawnTiles.splice(i, 1)[0];
+      tiles.push(tile);
+    });
+
+    selected.special.sort((a,b) => b - a).forEach(i => {
+      const tile = specialTiles.splice(i, 1)[0];
+      tiles.push(tile);
+    });
+
+    selected.removed.sort((a,b) => b - a).forEach(i => {
+      const tile = removedTiles.splice(i, 1)[0];
+      tiles.push(tile);
+    });
+
+    if (tiles.length > 0) {
+      document.getElementById("drawButton").disabled = false;
+    }
+
+    const totalReinserted = selected.drawn.length + selected.special.length + selected.removed.length;
+    document.getElementById("output").textContent = `Reinserted ${totalReinserted} tile(s) into the bag.`;
+    updateDisplay();
+  }
+
+  function removeSelected() {
+    const checkboxes = document.querySelectorAll("input.removable");
+    const toRemove = { drawn: [], bag: [], special: [] };
+
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        const listName = cb.dataset.list;
+        const index = parseInt(cb.dataset.index);
+        if (toRemove[listName]) toRemove[listName].push(index);
+      }
+    });
+
+    toRemove.drawn.sort((a,b) => b - a).forEach(i => {
+      const tile = drawnTiles.splice(i,1)[0];
+      removedTiles.push(tile);
+    });
+    toRemove.bag.sort((a,b) => b - a).forEach(i => {
+      const tile = tiles.splice(i,1)[0];
+      removedTiles.push(tile);
+    });
+    toRemove.special.sort((a,b) => b - a).forEach(i => {
+      const tile = specialTiles.splice(i,1)[0];
+      removedTiles.push(tile);
+    });
+
+    document.getElementById("output").textContent = `Removed ${toRemove.drawn.length + toRemove.bag.length + toRemove.special.length} tile(s) from the game.`;
+
+    if (tiles.length === 0) {
+      document.getElementById("drawButton").disabled = true;
+    }
+
+    updateDisplay();
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.matches('input.removable')) {
+      updateButtonsState();
+    }
+  });
+
+  updateDisplay();
+</script>
+
+</body>
+</html>
