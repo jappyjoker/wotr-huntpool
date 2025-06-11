@@ -16,6 +16,8 @@
     }
     h1 {
       color: #333;
+      font-size: 2em;
+      font-weight: bold;
     }
     .button {
       padding: 1em 1.5em;
@@ -31,7 +33,8 @@
     }
     .reset-btn {
       background-color: #ef5350;
-      margin-top: auto; /* Push to bottom */
+      margin-top: auto;
+      margin-top: 4em;
     }
     .reinsert-btn {
       background-color: #f44336;
@@ -44,10 +47,11 @@
       cursor: not-allowed;
     }
     #output {
-      font-size: 1.8em;
-      margin-top: 1em;
+      font-size: 1.6em;
+      font-weight: bold;
+      margin: 1em 0;
       color: #222;
-      min-height: 2.5em;
+      min-height: 2em;
     }
     #container {
       display: flex;
@@ -55,7 +59,7 @@
       justify-content: center;
       gap: 2em;
       margin-top: 2em;
-      max-width: 1200px;
+      max-width: 1400px;
       margin-left: auto;
       margin-right: auto;
       flex-grow: 1;
@@ -117,10 +121,11 @@
   <h1>War of the Ring - Hunt Pool</h1>
 
   <button class="button draw-btn" onclick="drawTile()" id="drawButton">Draw Tile</button>
-  <button class="button reinsert-btn" onclick="reinsertSelected()" id="reinsertButton" disabled>Reinsert selected tiles</button>
-  <button class="button remove-btn" onclick="removeSelected()" id="removeButton" disabled>Remove selected tiles permanently</button>
 
-  <div id="output">🎲</div>
+  <div id="output">Tile: 🎲</div>
+
+  <button class="button reinsert-btn" onclick="reinsertSelected()" id="reinsertButton" disabled>Insert Selected Tile/s</button>
+  <button class="button remove-btn" onclick="removeSelected()" id="removeButton" disabled>Remove Selected Tile/s</button>
 
   <div id="container">
     <div class="box">
@@ -139,6 +144,10 @@
       <h2>Removed Tiles</h2>
       <div id="removedTilesList">None</div>
     </div>
+    <div class="box">
+      <h2>Expansions</h2>
+      <div id="expansionTilesList">None</div>
+    </div>
   </div>
 
   <button class="button reset-btn" onclick="resetTiles()">Reset Hunt Pool</button>
@@ -152,10 +161,14 @@
     const specialTilesOriginal = [
       "0", "0", "-1", "-2", "Eye Stop", "1r Stop", "3 Stop", "Shelob Stop"
     ];
+    const expansionTilesOriginal = [
+      "Sméagol", "Sméagol", "Sméagol", "Sméagol", "1/Crown", "2/Crown"
+    ];
 
     let tiles = [...originalTiles];
     let drawnTiles = [];
     let specialTiles = [...specialTilesOriginal];
+    let expansionTiles = [...expansionTilesOriginal];
     let removedTiles = [];
 
     function drawTile() {
@@ -163,7 +176,7 @@
       const index = Math.floor(Math.random() * tiles.length);
       const tile = tiles.splice(index, 1)[0];
       drawnTiles.push(tile);
-      document.getElementById("output").textContent = `You drew: ${tile}`;
+      document.getElementById("output").textContent = `Tile: ${tile}`;
       updateDisplay();
       if (tiles.length === 0) {
         document.getElementById("drawButton").disabled = true;
@@ -175,9 +188,10 @@
       tiles = [...originalTiles];
       drawnTiles = [];
       specialTiles = [...specialTilesOriginal];
+      expansionTiles = [...expansionTilesOriginal];
       removedTiles = [];
       document.getElementById("drawButton").disabled = false;
-      document.getElementById("output").textContent = "🎲";
+      document.getElementById("output").textContent = "Tile: 🎲";
       updateDisplay();
     }
 
@@ -186,7 +200,7 @@
         if (arr.length === 0) return "None";
         return arr.map((tile, i) => {
           let classes = "";
-          if (listName === "special" || listName === "removed") {
+          if (["special", "removed"].includes(listName)) {
             if (["0", "-1", "-2"].includes(tile)) {
               classes = "blue-bold";
             } else if (["Eye Stop", "1r Stop", "3 Stop", "Shelob Stop"].includes(tile)) {
@@ -205,6 +219,7 @@
       document.getElementById("remaining").innerHTML = makeList(tiles, "bag");
       document.getElementById("specialTilesList").innerHTML = makeList(specialTiles, "special");
       document.getElementById("removedTilesList").innerHTML = makeList(removedTiles, "removed");
+      document.getElementById("expansionTilesList").innerHTML = makeList(expansionTiles, "expansion");
 
       updateButtonsState();
     }
@@ -217,12 +232,13 @@
       const drawnChecked = Array.from(document.querySelectorAll("#history input[type='checkbox']")).some(cb => cb.checked);
       const specialChecked = Array.from(document.querySelectorAll("#specialTilesList input[type='checkbox']")).some(cb => cb.checked);
       const removedChecked = Array.from(document.querySelectorAll("#removedTilesList input[type='checkbox']")).some(cb => cb.checked);
-      document.getElementById("reinsertButton").disabled = !(drawnChecked || specialChecked || removedChecked);
+      const expansionChecked = Array.from(document.querySelectorAll("#expansionTilesList input[type='checkbox']")).some(cb => cb.checked);
+      document.getElementById("reinsertButton").disabled = !(drawnChecked || specialChecked || removedChecked || expansionChecked);
     }
 
     function reinsertSelected() {
       const checkboxes = document.querySelectorAll("input.removable");
-      const selected = { drawn: [], special: [], removed: [] };
+      const selected = { drawn: [], special: [], removed: [], expansion: [] };
 
       checkboxes.forEach(cb => {
         if (cb.checked) {
@@ -232,33 +248,21 @@
         }
       });
 
-      selected.drawn.sort((a, b) => b - a).forEach(i => {
-        const tile = drawnTiles.splice(i, 1)[0];
-        tiles.push(tile);
-      });
+      selected.drawn.sort((a, b) => b - a).forEach(i => tiles.push(drawnTiles.splice(i, 1)[0]));
+      selected.special.sort((a, b) => b - a).forEach(i => tiles.push(specialTiles.splice(i, 1)[0]));
+      selected.removed.sort((a, b) => b - a).forEach(i => tiles.push(removedTiles.splice(i, 1)[0]));
+      selected.expansion.sort((a, b) => b - a).forEach(i => tiles.push(expansionTiles.splice(i, 1)[0]));
 
-      selected.special.sort((a, b) => b - a).forEach(i => {
-        const tile = specialTiles.splice(i, 1)[0];
-        tiles.push(tile);
-      });
+      if (tiles.length > 0) document.getElementById("drawButton").disabled = false;
 
-      selected.removed.sort((a, b) => b - a).forEach(i => {
-        const tile = removedTiles.splice(i, 1)[0];
-        tiles.push(tile);
-      });
-
-      if (tiles.length > 0) {
-        document.getElementById("drawButton").disabled = false;
-      }
-
-      const totalReinserted = selected.drawn.length + selected.special.length + selected.removed.length;
-      document.getElementById("output").textContent = `Reinserted ${totalReinserted} tile(s) into the bag.`;
+      const total = selected.drawn.length + selected.special.length + selected.removed.length + selected.expansion.length;
+      document.getElementById("output").textContent = `Reinserted ${total} tile(s) into the bag.`;
       updateDisplay();
     }
 
     function removeSelected() {
       const checkboxes = document.querySelectorAll("input.removable");
-      const toRemove = { drawn: [], bag: [], special: [] };
+      const toRemove = { drawn: [], bag: [], special: [], expansion: [] };
 
       checkboxes.forEach(cb => {
         if (cb.checked) {
@@ -268,31 +272,20 @@
         }
       });
 
-      toRemove.drawn.sort((a, b) => b - a).forEach(i => {
-        const tile = drawnTiles.splice(i, 1)[0];
-        removedTiles.push(tile);
-      });
-      toRemove.bag.sort((a, b) => b - a).forEach(i => {
-        const tile = tiles.splice(i, 1)[0];
-        removedTiles.push(tile);
-      });
-      toRemove.special.sort((a, b) => b - a).forEach(i => {
-        const tile = specialTiles.splice(i, 1)[0];
-        removedTiles.push(tile);
-      });
+      toRemove.drawn.sort((a, b) => b - a).forEach(i => removedTiles.push(drawnTiles.splice(i, 1)[0]));
+      toRemove.bag.sort((a, b) => b - a).forEach(i => removedTiles.push(tiles.splice(i, 1)[0]));
+      toRemove.special.sort((a, b) => b - a).forEach(i => removedTiles.push(specialTiles.splice(i, 1)[0]));
+      toRemove.expansion.sort((a, b) => b - a).forEach(i => removedTiles.push(expansionTiles.splice(i, 1)[0]));
 
-      document.getElementById("output").textContent = `Removed ${toRemove.drawn.length + toRemove.bag.length + toRemove.special.length} tile(s) permanently.`;
+      const total = toRemove.drawn.length + toRemove.bag.length + toRemove.special.length + toRemove.expansion.length;
+      document.getElementById("output").textContent = `Removed ${total} tile(s) permanently.`;
       updateDisplay();
     }
 
-    // Listen for checkbox changes to update button states
     document.body.addEventListener("change", e => {
-      if (e.target.matches("input.removable")) {
-        updateButtonsState();
-      }
+      if (e.target.matches("input.removable")) updateButtonsState();
     });
 
-    // Initialize display on load
     resetTiles();
   </script>
 </body>
