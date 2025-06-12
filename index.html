@@ -124,7 +124,7 @@
 
   <div id="output">Tile: 🎲</div>
 
-  <button class="button reinsert-btn" onclick="reinsertSelected()" id="reinsertButton" disabled>Add Selected Tile/s</button>
+  <button class="button reinsert-btn" onclick="reinsertSelected()" id="reinsertButton" disabled>Add Selected Tile/s to the Hunt Pool</button>
   <button class="button remove-btn" onclick="removeSelected()" id="removeButton" disabled>Remove Selected Tile/s</button>
 
   <div id="container">
@@ -180,7 +180,7 @@
       updateDisplay();
       if (tiles.length === 0) {
         document.getElementById("drawButton").disabled = true;
-        document.getElementById("output").textContent += " (Last tile! Reset the Hunt Pool.)";
+        document.getElementById("output").textContent += " (Last tile! Reset the Hunt Pool)";
       }
     }
 
