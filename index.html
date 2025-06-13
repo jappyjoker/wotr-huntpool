@@ -4,117 +4,154 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>War of the Ring - Hunt Pool</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em 1em;
-      background-color: #f9f9f9;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    h1 {
-      color: #333;
-      font-size: 2em;
-      font-weight: bold;
-    }
-    .button {
-      padding: 1em 1.5em;
-      margin: 0.3em;
-      font-size: 1.1em;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-    }
-    .draw-btn {
-      background-color: #e53935;
-    }
-    .reset-btn {
-      background-color: #ef5350;
-      margin-top: auto;
-      margin-top: 4em;
-    }
-    .reinsert-btn {
-      background-color: #f44336;
-    }
-    .remove-btn {
-      background-color: #b71c1c;
-    }
-    .button:disabled {
-      background-color: #aaa !important;
-      cursor: not-allowed;
-    }
-    #output {
-      font-size: 1.6em;
-      font-weight: bold;
-      margin: 1em 0;
-      color: #222;
-      min-height: 2em;
-    }
-    #container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 2em;
-      margin-top: 2em;
-      max-width: 1400px;
-      margin-left: auto;
-      margin-right: auto;
-      flex-grow: 1;
-    }
-    .box {
-      background: white;
-      border-radius: 10px;
-      padding: 1em 1.5em;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-width: 280px;
-      text-align: left;
-      min-height: 150px;
-      overflow-y: auto;
-    }
-    .box h2 {
-      margin-top: 0;
-      margin-bottom: 0.5em;
-      font-size: 1.4em;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 0.3em;
-    }
-    .tile-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5em;
-      margin: 0.15em 0;
-    }
-    .blue-bold {
-      color: blue;
-      font-weight: bold;
-    }
-    .red-bold {
-      color: red;
-      font-weight: bold;
-    }
-    @media (max-width: 768px) {
-      #container {
-        flex-direction: column;
-        align-items: center;
-      }
-      .box {
-        width: 90%;
-        max-width: none;
-      }
-      .button {
-        width: 90%;
-        max-width: 300px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      #output {
-        font-size: 1.5em;
-      }
-    }
+body {
+  font-family: 'Cinzel', serif;
+  text-align: center;
+  padding: 2em 1em;
+  background-color: #121212; /* scuro ma leggibile */
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1 {
+  color: #fdd835;
+  font-size: 2.5em;
+  font-weight: bold;
+}
+
+.button {
+  padding: 1em 1.5em;
+  margin: 0.3em;
+  font-size: 1.1em;
+  font-weight: 600;
+  border: 2px solid #aa0000;
+  border-radius: 10px;
+  background-color: #550000;
+  color: #ffdcb0;
+  cursor: pointer;
+  box-shadow: 0 0 12px #bb0000;
+  transition: all 0.3s ease;
+  font-family: 'Cinzel', serif;
+}
+
+.button:hover:not(:disabled),
+.button:focus {
+  background-color: #770000;
+  color: #ffffff;
+  box-shadow: 0 0 20px #ff4444;
+  outline: none;
+}
+
+.draw-btn,
+.reinsert-btn,
+.reset-btn {
+  background-color: #550000;
+  border-color: #aa0000;
+}
+
+.remove-btn {
+  background-color: #550000;
+  border-color: #aa0000;
+  margin-bottom: 2em; /* SPAZIO EXTRA AGGIUNTO */
+}
+
+.reset-btn {
+  margin-top: 4em;
+}
+
+.button:disabled {
+  background-color: #333 !important;
+  color: #888 !important;
+  border-color: #444 !important;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+#output {
+  font-size: 1.6em;
+  font-weight: bold;
+  margin: 1em 0;
+  color: #ffd700;
+  min-height: 2em;
+}
+
+#container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2em;
+  margin-top: 2em;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  flex-grow: 1;
+}
+
+.box {
+  background: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 1em 1.5em;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+  max-width: 280px;
+  text-align: left;
+  min-height: 150px;
+  overflow-y: auto;
+  color: #e0e0e0;
+}
+
+.box h2 {
+  margin-top: 0;
+  margin-bottom: 0.5em;
+  font-size: 1.4em;
+  border-bottom: 1px solid #aa0000;
+  padding-bottom: 0.3em;
+  color: #fdd835;
+}
+
+.tile-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.15em 0;
+}
+
+.blue-bold {
+  color: #66ccff;
+  font-weight: bold;
+}
+
+.red-bold {
+  color: #ff6666;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  #container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .box {
+    width: 90%;
+    max-width: none;
+  }
+  .button {
+    width: 90%;
+    max-width: 300px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #output {
+    font-size: 1.5em;
+  }
+}
+
   </style>
 </head>
 <body>
